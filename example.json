@@ -7,7 +7,7 @@
     {"id": "spinel", "formula": "MgAl2O4", "kind": "user", "source": "Illustrative inventory"}
   ],
   "points": [
-    {"id": "input", "role": "input", "label": "Nominal input", "basis": "mass_g", "values": {"Mg": 0.25, "Al": 0.52, "O": 0.65}},
+    {"id": "input", "role": "input", "label": "Nominal input", "basis": "mass_g", "values": {"Mg": 0.45, "Al": 0.30, "O": 0.40}},
     {"id": "output", "role": "output", "label": "Measured output", "basis": "atomic_percent", "values": {"Mg": 15, "Al": 27, "O": 58}, "label_offset": [-6, -14]}
   ],
   "lines": [{"from": "MgO", "to": "alumina", "kind": "guide", "label": "Composition guide"}],
