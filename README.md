@@ -4,6 +4,8 @@ Plot reported phases and sample compositions for a three-element system. The dis
 
 ![Bundled Mg–Al–O ternary plot showing phase markers, nominal input, and measured output](assets/mg-al-o-example.png)
 
+*Asterisks mark condition-specific reports. MgO₂ was reported at high oxygen fugacity and MgAl₂ after rapid quenching. The hollow circle marks nominal input and the filled circle marks measured output.*
+
 ## Install in Codex
 
 Install Git and Python 3.11 or newer. Run the commands for your operating system.

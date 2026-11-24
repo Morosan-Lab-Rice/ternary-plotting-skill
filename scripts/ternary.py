@@ -23,7 +23,7 @@ PHASE_STYLES = {
 }
 POINT_STYLES = {
     "input": ("o", "#a74116", "Nominal input"),
-    "output": ("^", "#007c83", "Measured output"),
+    "output": ("o", "#a74116", "Measured output"),
     "sample": ("o", "#a74116", "Sample composition"),
 }
 
@@ -184,8 +184,8 @@ def plot(data, output, *, include_theoretical=False):
         x2, y2 = records[b][1]
         if (x1, y1) == (x2, y2):
             raise ValueError("Line endpoints must have distinct compositions")
-        ax.plot([x1, x2], [y1, y2], "--" if kind == "alkemade" else ":",
-                color=line.get("color", "#555555"), lw=1.3, zorder=2,
+        ax.plot([x1, x2], [y1, y2], linestyle=line.get("linestyle", "--" if kind == "alkemade" else ":"),
+                color=line.get("color", "#555555"), lw=line.get("linewidth", 1.3), zorder=2,
                 label=line.get("label", "Alkemade line" if kind == "alkemade" else "Composition guide"))
     fig.canvas.draw()
     styles = {}
@@ -201,7 +201,10 @@ def plot(data, output, *, include_theoretical=False):
                 legend = "MP candidate with experimental match"
             else:
                 legend = "Computed candidate (provenance unknown)"
-        styles[key] = (marker, color, legend, alpha)
+        filled = record.get("filled", record.get("role") != "input" or key in phases)
+        styles[key] = dict(marker=record.get("marker", marker), edgecolors=color,
+                           facecolors=color if filled else "none",
+                           s=record.get("marker_size", 26), alpha=alpha, label=legend)
     insets = []
     for arrow in data.get("arrows", []):
         if arrow["from"] in excluded or arrow["to"] in excluded:
@@ -209,13 +212,16 @@ def plot(data, output, *, include_theoretical=False):
         start, end = (records[arrow[key]][1] for key in ("from", "to"))
         if start == end:
             raise ValueError("Arrow endpoints coincide. Use a shared point label.")
-        patch = FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=13,
-                                shrinkA=4, shrinkB=4, linewidth=1.6, zorder=4,
-                                color=arrow.get("color", "#333333"),
+        arrow_style = dict(arrowstyle=arrow.get("arrowstyle", "-|>"),
+                           mutation_scale=arrow.get("mutation_scale", 13),
+                           linewidth=arrow.get("linewidth", 1.6),
+                           linestyle=arrow.get("linestyle", "-"),
+                           color=arrow.get("color", "#333333"))
+        patch = FancyArrowPatch(start, end, shrinkA=4, shrinkB=4, zorder=4, **arrow_style,
                                 label=arrow.get("label", "Input → output"))
         pixel_distance = dist(*ax.transData.transform([start, end]))
         if pixel_distance * 72 / fig.dpi < 19 and len(insets) < 2:
-            insets.append((arrow["from"], arrow["to"], patch.get_edgecolor(), patch.get_label()))
+            insets.append((arrow["from"], arrow["to"], arrow_style, patch.get_label()))
             continue
         if pixel_distance * 72 / fig.dpi < 19:
             patch.shrinkA = patch.shrinkB = 0
@@ -231,9 +237,8 @@ def plot(data, output, *, include_theoretical=False):
             label = record.get("label") or formula_label(record.get("formula", key))
         else:
             label = record.get("label", key)
-        marker, color, legend, alpha = styles[key]
-        ax.scatter(*position, marker=marker, color=color, s=26, zorder=5, label=legend, alpha=alpha,
-                   facecolors="none" if legend == "Nominal input" else color)
+        ax.scatter(*position, zorder=5, **styles[key])
+        alpha = styles[key]["alpha"]
         offset = tuple(record.get("label_offset", (5, 5)))
         if alpha < 1:
             label = (label, alpha)
@@ -247,7 +252,7 @@ def plot(data, output, *, include_theoretical=False):
         obstacles.append(ax.legend(unique.values(), unique.keys(), loc="upper left",
                                    framealpha=1, facecolor="white", edgecolor="black",
                                    fancybox=False, fontsize=8))
-    for index, (start_id, end_id, color, label) in enumerate(insets):
+    for index, (start_id, end_id, arrow_style, label) in enumerate(insets):
         start, end = records[start_id][1], records[end_id][1]
         height = .15
         inset = ax.inset_axes([.80, .99 - (index + 1) * height, .19, height - .023])
@@ -258,15 +263,12 @@ def plot(data, output, *, include_theoretical=False):
         inset.title.set_fontsize(7)
         inset.set_aspect("equal", adjustable="box")
         for key in (start_id, end_id):
-            marker, marker_color, legend, alpha = styles[key]
-            inset.scatter(*records[key][1], marker=marker, edgecolors=marker_color, zorder=3, alpha=alpha,
-                          facecolors="none" if legend == "Nominal input" else marker_color)
-        inset.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=11,
-                                        shrinkA=4, shrinkB=4, color=color))
+            inset.scatter(*records[key][1], zorder=3, **styles[key])
+        inset.add_patch(FancyArrowPatch(start, end, shrinkA=4, shrinkB=4, **arrow_style))
         obstacles.extend([inset, inset.title])
     fig.canvas.draw()
-    marker_radius = 4 * fig.dpi / 72
-    for _, position in records.values():
+    for key, (_, position) in records.items():
+        marker_radius = max(4, sqrt(styles[key]["s"]) / 2 + 1) * fig.dpi / 72
         x, y = ax.transData.transform(position)
         obstacles.append(Bbox.from_bounds(x - marker_radius, y - marker_radius,
                                           2 * marker_radius, 2 * marker_radius))
