@@ -1,0 +1,15 @@
+{
+  "elements": ["Mg", "Al", "O"],
+  "title": "Mg–Al–O composition example",
+  "phases": [
+    {"id": "MgO", "formula": "MgO", "kind": "user", "source": "Illustrative inventory"},
+    {"id": "alumina", "formula": "Al2O3", "kind": "user", "source": "Illustrative inventory"},
+    {"id": "spinel", "formula": "MgAl2O4", "kind": "user", "source": "Illustrative inventory"}
+  ],
+  "points": [
+    {"id": "input", "role": "input", "label": "Nominal input", "basis": "mass_g", "values": {"Mg": 0.25, "Al": 0.52, "O": 0.65}},
+    {"id": "output", "role": "output", "label": "Measured output", "basis": "atomic_percent", "values": {"Mg": 15, "Al": 27, "O": 58}, "label_offset": [-6, -14]}
+  ],
+  "lines": [{"from": "MgO", "to": "alumina", "kind": "guide", "label": "Composition guide"}],
+  "arrows": [{"from": "input", "to": "output", "label": "Input → output"}]
+}
