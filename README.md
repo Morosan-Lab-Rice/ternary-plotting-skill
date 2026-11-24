@@ -2,6 +2,8 @@
 
 Plot reported phases and sample compositions for a three-element system. The discovery workflow starts with assessed ambient-pressure phases, checks representative structures in ICSD, and uses Materials Project (MP) as a secondary source.
 
+![Bundled Mg–Al–O ternary plot showing phase markers, nominal input, and measured output](assets/mg-al-o-example.png)
+
 ## Install in Codex
 
 Install Git and Python 3.11 or newer. Run the commands for your operating system.
