@@ -105,7 +105,9 @@ def place_labels(fig, ax, labels, obstacles):
     occupied = [item if isinstance(item, Bbox) else item.get_window_extent(renderer)
                 for item in [*ax.texts, *obstacles]]
     for (position, preferred), names in labels.items():
-        annotation = ax.annotate("\n".join(names), position, xytext=preferred,
+        text = "\n".join(name[0] if isinstance(name, tuple) else name for name in names)
+        alpha = max(name[1] if isinstance(name, tuple) else 1 for name in names)
+        annotation = ax.annotate(text, position, xytext=preferred, alpha=alpha,
                                  textcoords="offset points", fontsize=7.5, zorder=6,
                                  arrowprops={"arrowstyle": "-", "color": "0.45", "lw": .55})
         candidates = [preferred]
@@ -124,10 +126,10 @@ def place_labels(fig, ax, labels, obstacles):
                 break
         else:
             annotation.remove()
-            raise ValueError(f"Could not place label {', '.join(names)}. Adjust label_offset.")
+            raise ValueError(f"Could not place label {text!r}. Adjust label_offset.")
 
 
-def plot(data, output):
+def plot(data, output, *, include_theoretical=False):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -140,13 +142,21 @@ def plot(data, output):
     axis_basis = data.get("axis_basis", "atomic")
     if axis_basis not in ("atomic", "mass"):
         raise ValueError("axis_basis must be atomic or mass")
-    phases = {r["id"] for r in data.get("phases", [])}
+    phase_records = data.get("phases", [])
+    excluded = {
+        r["id"] for r in phase_records
+        if r["kind"] == "computed" and r.get("theoretical") is not False
+        and not (include_theoretical and r.get("theoretical") is True)
+    }
+    phases = {r["id"] for r in phase_records}
     records = {}
     for record in data.get("phases", []) + data.get("points", []):
         key = record["id"]
         if key in records:
             raise ValueError(f"Duplicate ID: {key}")
         records[key] = (record, xy(fractions(record, elements, axis_basis)))
+
+    records = {key: value for key, value in records.items() if key not in excluded}
 
     fonts = {font.name for font in matplotlib.font_manager.fontManager.ttflist}
     if "Arial" in fonts:
@@ -164,6 +174,8 @@ def plot(data, output):
             a not in phases or b not in phases or not line.get("source") or not line.get("conditions")
         ):
             raise ValueError("An Alkemade line requires two phase IDs, source and conditions")
+        if a in excluded or b in excluded:
+            continue
         x1, y1 = records[a][1]
         x2, y2 = records[b][1]
         if (x1, y1) == (x2, y2):
@@ -177,9 +189,19 @@ def plot(data, output):
         marker, color, legend = (PHASE_STYLES[record["kind"]] if key in phases
                                  else POINT_STYLES[record.get("role", "sample")])
         color = record.get("color", color)
-        styles[key] = (marker, color, legend)
+        alpha = 1
+        if key in phases and record["kind"] == "computed":
+            if record.get("theoretical") is True:
+                alpha, legend = .2, "MP candidate without experimental match"
+            elif record.get("theoretical") is False:
+                legend = "MP candidate with experimental match"
+            else:
+                legend = "Computed candidate (provenance unknown)"
+        styles[key] = (marker, color, legend, alpha)
     insets = []
     for arrow in data.get("arrows", []):
+        if arrow["from"] in excluded or arrow["to"] in excluded:
+            continue
         start, end = (records[arrow[key]][1] for key in ("from", "to"))
         if start == end:
             raise ValueError("Arrow endpoints coincide. Use a shared point label.")
@@ -205,10 +227,12 @@ def plot(data, output):
             label = record.get("label") or formula_label(record.get("formula", key))
         else:
             label = record.get("label", key)
-        marker, color, legend = styles[key]
-        ax.scatter(*position, marker=marker, color=color, s=26, zorder=5, label=legend,
+        marker, color, legend, alpha = styles[key]
+        ax.scatter(*position, marker=marker, color=color, s=26, zorder=5, label=legend, alpha=alpha,
                    facecolors="none" if legend == "Nominal input" else color)
         offset = tuple(record.get("label_offset", (5, 5)))
+        if alpha < 1:
+            label = (label, alpha)
         if label not in labels[position, offset]:
             labels[position, offset].append(label)
     ax.set_title(data.get("title", "–".join(e.symbol for e in elements) + " compositions"))
@@ -230,8 +254,8 @@ def plot(data, output):
         inset.title.set_fontsize(7)
         inset.set_aspect("equal", adjustable="box")
         for key in (start_id, end_id):
-            marker, marker_color, legend = styles[key]
-            inset.scatter(*records[key][1], marker=marker, edgecolors=marker_color, zorder=3,
+            marker, marker_color, legend, alpha = styles[key]
+            inset.scatter(*records[key][1], marker=marker, edgecolors=marker_color, zorder=3, alpha=alpha,
                           facecolors="none" if legend == "Nominal input" else marker_color)
         inset.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=11,
                                         shrinkA=4, shrinkB=4, color=color))
@@ -267,7 +291,7 @@ def discover(symbols, output):
         for system in systems:
             docs = client.materials.summary.search(
                 chemsys=system, deprecated=False,
-                fields=["material_id", "formula_pretty", "chemsys"],
+                fields=["material_id", "formula_pretty", "chemsys", "theoretical"],
             )
             found = set()
             for doc in docs:
@@ -278,6 +302,7 @@ def discover(symbols, output):
                 phases[mid] = {
                     "id": mid, "formula": doc.formula_pretty,
                     "kind": "computed", "source": f"https://materialsproject.org/materials/{mid}",
+                    "theoretical": doc.theoretical,
                 }
             counts[system] = len(found)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -294,13 +319,16 @@ def main():
     render = commands.add_parser("plot")
     render.add_argument("input", type=Path)
     render.add_argument("output", type=Path)
+    render.add_argument("--include-theoretical", action="store_true",
+                        help="Include Materials Project candidates without an experimental match at 20%% opacity")
     survey = commands.add_parser("discover")
     survey.add_argument("elements", nargs=3)
     survey.add_argument("output", type=Path)
     args = parser.parse_args()
     try:
         if args.command == "plot":
-            plot(json.loads(args.input.read_text(encoding="utf-8")), args.output)
+            plot(json.loads(args.input.read_text(encoding="utf-8")), args.output,
+                 include_theoretical=args.include_theoretical)
         else:
             discover(args.elements, args.output)
     except (ValueError, KeyError, ImportError, OSError) as exc:

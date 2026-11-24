@@ -1,14 +1,16 @@
 ---
-name: ternary-diagrams
+name: ternary-plotting-skill
 description: Discover and plot reported or computed phases in a three-element chemical system, with optional sample points, Alkemade lines, and arrows from input to output compositions.
 ---
 
-# Ternary diagrams
+# Ternary plotting skill
 
-1. Take three distinct element symbols in the requested order (left, right, top). Default to atomic percent. Set `axis_basis` to `mass` for weight percent. For a general phase survey, prioritize experimental reports and identify computed candidates separately.
-2. Unless the user supplies the phase inventory or requests plotting only, search all three binary subsystems and the ternary system. The pure elements are already vertices. Add a sourced elemental phase record if a vertex needs a specific phase identity or an overlay endpoint. Use [phase discovery](references.md) to check sources and coverage.
+1. Take three distinct element symbols in the requested order (left, right, top). Default to atomic percent. Set `axis_basis` to `mass` for weight percent. Default to ambient pressure (about 0.1 MPa) for discovered phases unless the user specifies otherwise. See the [pressure and phase selection criteria](references.md#select-phases-for-the-ternary).
+2. Unless the user supplies the phase inventory or requests plotting only, search all three binary subsystems and the ternary system. The pure elements are already vertices. Add a sourced elemental phase record if a vertex needs a specific phase identity or an overlay endpoint. Start with [the assessed phase shortlist](references.md#select-phases-for-the-ternary), then use ICSD as the first database for targeted verification. Use Materials Project as a secondary database to cross-check coverage or find requested computed candidates. Report sources and gaps.
 3. Save the plotted inventory and overlays in a JSON file. Use stable IDs and cite sources. Follow the [runnable example](example.json).
 4. Run `python <skill-dir>/scripts/ternary.py plot INPUT.json OUTPUT.png` (Python 3.10+, Matplotlib and pymatgen). Deliver the PNG and input JSON. State which sources and subsystems were searched and any coverage gaps. Follow the user's image inspection preferences.
+
+For Materials Project results, plot only compositions with an experimental structure match by default. Tell the user that theoretical entries are available at 20% opacity with `plot --include-theoretical`. Preserve all discovery records in the inventory.
 
 If Materials Project discovery is unavailable, provide the [API setup steps](references.md#connect-materials-project) and offer to help verify the user's installation and connection.
 
