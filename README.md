@@ -4,7 +4,7 @@ Plot reported phases and sample compositions for a three-element system. The dis
 
 ## Install in Codex
 
-You’ll need access to this private GitHub repository. Sign in to GitHub and accept the lab’s invitation if you haven’t already. From a terminal with Git and Python 3.11 or newer:
+From a terminal with Git and Python 3.11 or newer, run the following commands.
 
 ```sh
 mkdir -p ~/.agents/skills
