@@ -97,6 +97,7 @@ def draw_grid(ax, elements, axis_basis):
 
 
 def place_labels(fig, ax, labels, obstacles):
+    from matplotlib.patches import FancyArrowPatch
     from matplotlib.text import Text
     from matplotlib.transforms import Bbox
 
@@ -104,6 +105,8 @@ def place_labels(fig, ax, labels, obstacles):
     renderer = fig.canvas.get_renderer()
     occupied = [item if isinstance(item, Bbox) else item.get_window_extent(renderer)
                 for item in [*ax.texts, *obstacles]]
+    arrow_paths = [patch.get_path().transformed(patch.get_transform())
+                   for patch in ax.patches if isinstance(patch, FancyArrowPatch)]
     for (position, preferred), names in labels.items():
         text = "\n".join(name[0] if isinstance(name, tuple) else name for name in names)
         alpha = max(name[1] if isinstance(name, tuple) else 1 for name in names)
@@ -121,7 +124,8 @@ def place_labels(fig, ax, labels, obstacles):
             annotation.update_positions(renderer)
             bounds = Text.get_window_extent(annotation, renderer).padded(2)
             if (all(fig.bbox.contains(*corner) for corner in bounds.get_points())
-                    and not any(bounds.overlaps(other) for other in occupied)):
+                    and not any(bounds.overlaps(other) for other in occupied)
+                    and not any(path.intersects_bbox(bounds, filled=True) for path in arrow_paths)):
                 occupied.append(bounds)
                 break
         else:

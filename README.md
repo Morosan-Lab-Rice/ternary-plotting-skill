@@ -54,7 +54,7 @@ $skillPython = Join-Path $skillDir '.venv\Scripts\python.exe'
 & $skillPython (Join-Path $skillDir 'scripts\ternary.py') plot (Join-Path $skillDir 'example.json') mg-al-o.png
 ```
 
-The bundled example uses an illustrative phase inventory, plus nominal input and measured output points. It runs without ICSD access or an MP API key. To try phase discovery separately, ask Codex for an ambient-pressure Mg–Al–O phase shortlist with cited sources.
+The bundled example shows eight reported Mg–Al–O compositions from the literature, including the β and β′ Samson phases at a shared representative composition. Asterisks mark phases reported under specific preparation or chemical conditions. The nominal input and measured output are illustrative. It runs without ICSD access or an MP API key. To try phase discovery separately, ask Codex for an ambient-pressure Mg–Al–O phase shortlist with cited sources.
 
 ## Access ICSD through Rice
 

@@ -1,15 +1,153 @@
 {
-  "elements": ["Mg", "Al", "O"],
+  "elements": [
+    "Mg",
+    "Al",
+    "O"
+  ],
   "title": "Mg–Al–O composition example",
   "phases": [
-    {"id": "MgO", "formula": "MgO", "kind": "user", "source": "Illustrative inventory"},
-    {"id": "alumina", "formula": "Al2O3", "kind": "user", "source": "Illustrative inventory"},
-    {"id": "spinel", "formula": "MgAl2O4", "kind": "user", "source": "Illustrative inventory"}
+    {
+      "id": "beta",
+      "formula": "Mg0.385Al0.615",
+      "label": "β / β′ Samson",
+      "kind": "reported",
+      "source": "https://doi.org/10.1524/zkri.2007.222.6.259",
+      "category": "assessed",
+      "label_offset": [
+        -8,
+        18
+      ]
+    },
+    {
+      "id": "beta-prime",
+      "formula": "Mg0.385Al0.615",
+      "label": "β / β′ Samson",
+      "kind": "reported",
+      "source": "https://doi.org/10.1524/zkri.2007.222.6.259",
+      "category": "assessed",
+      "label_offset": [
+        -8,
+        18
+      ]
+    },
+    {
+      "id": "epsilon",
+      "formula": "Mg23Al30",
+      "label": "ε-Mg$_{23}$Al$_{30}$",
+      "kind": "reported",
+      "source": "https://www.sciencedirect.com/science/article/pii/S092583882030325X",
+      "category": "assessed",
+      "label_offset": [
+        -5,
+        35
+      ]
+    },
+    {
+      "id": "gamma",
+      "formula": "Mg17Al12",
+      "label": "γ-Mg$_{17}$Al$_{12}$",
+      "kind": "reported",
+      "source": "https://www.sciencedirect.com/science/article/pii/S092583882030325X",
+      "category": "assessed",
+      "label_offset": [
+        -8,
+        12
+      ]
+    },
+    {
+      "id": "periclase",
+      "formula": "MgO",
+      "label": "MgO",
+      "kind": "reported",
+      "source": "https://doi.org/10.1111/j.1151-2916.1992.tb04216.x",
+      "category": "assessed"
+    },
+    {
+      "id": "corundum",
+      "formula": "Al2O3",
+      "label": "α-Al$_2$O$_3$",
+      "kind": "reported",
+      "source": "https://doi.org/10.1111/j.1151-2916.1992.tb04216.x",
+      "category": "assessed"
+    },
+    {
+      "id": "spinel",
+      "formula": "MgAl2O4",
+      "label": "MgAl$_2$O$_4$",
+      "kind": "reported",
+      "source": "https://doi.org/10.1111/j.1151-2916.1992.tb04216.x",
+      "category": "assessed"
+    },
+    {
+      "id": "peroxide",
+      "formula": "MgO2",
+      "label": "MgO$_2$*",
+      "kind": "reported",
+      "source": "https://doi.org/10.1038/srep13582",
+      "category": "condition-specific",
+      "label_offset": [
+        -8,
+        6
+      ]
+    },
+    {
+      "id": "quenched-alloy",
+      "formula": "MgAl2",
+      "label": "MgAl$_2$*",
+      "kind": "reported",
+      "source": "https://doi.org/10.1515/ijmr-1978-690304",
+      "category": "condition-specific",
+      "label_offset": [
+        -10,
+        10
+      ]
+    }
   ],
   "points": [
-    {"id": "input", "role": "input", "label": "Nominal input", "basis": "mass_g", "values": {"Mg": 0.45, "Al": 0.30, "O": 0.40}},
-    {"id": "output", "role": "output", "label": "Measured output", "basis": "atomic_percent", "values": {"Mg": 15, "Al": 27, "O": 58}, "label_offset": [-6, -14]}
+    {
+      "id": "input",
+      "role": "input",
+      "label": "Nominal input",
+      "basis": "mass_g",
+      "values": {
+        "Mg": 0.45,
+        "Al": 0.3,
+        "O": 0.4
+      },
+      "label_offset": [
+        -10,
+        12
+      ]
+    },
+    {
+      "id": "output",
+      "role": "output",
+      "label": "Measured output",
+      "basis": "atomic_percent",
+      "values": {
+        "Mg": 15,
+        "Al": 27,
+        "O": 58
+      },
+      "label_offset": [
+        12,
+        10
+      ]
+    }
   ],
-  "lines": [{"from": "MgO", "to": "alumina", "kind": "guide", "label": "Composition guide"}],
-  "arrows": [{"from": "input", "to": "output", "label": "Input → output"}]
+  "lines": [
+    {
+      "from": "periclase",
+      "to": "corundum",
+      "kind": "guide",
+      "label": "Composition guide"
+    }
+  ],
+  "arrows": [
+    {
+      "from": "input",
+      "to": "output",
+      "label": "Input → output"
+    }
+  ]
 }
