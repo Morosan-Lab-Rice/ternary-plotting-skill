@@ -327,7 +327,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == "plot":
-            plot(json.loads(args.input.read_text(encoding="utf-8")), args.output,
+            plot(json.loads(args.input.read_text(encoding="utf-8-sig")), args.output,
                  include_theoretical=args.include_theoretical)
         else:
             discover(args.elements, args.output)

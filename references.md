@@ -50,6 +50,8 @@ For ICSD Web, run each exact-system query with **Experim. inorganic structures**
 python scripts/icsd_metadata.py Mg Al O results/*.html --output-prefix output/mg-al-o-icsd
 ```
 
+In PowerShell, collect the paths with `$tables = (Get-ChildItem .\results -Filter *.html -File).FullName` and pass `$tables` where the example uses `results/*.html`. Use the appropriate filter for your exported file extension.
+
 The script runs locally. It writes a metadata-only `-records.csv` with one row per ICSD collection code and a `-compositions.csv` with normalized atomic fractions and all collection codes at each composition. It retains polymorphs and repeated measurements in the records table and reports formulas needing manual review. Compare the composition table with Materials Project using the same element order and atomic fractions rounded to 12 decimal places. Report supplied-page coverage and any unresolved formulas before treating the counts as complete.
 
 Use the licensed [ICSD API Service](https://icsd.products.fiz-karlsruhe.de/en/products/icsd-products) for end-to-end scripted search and retrieval. Connect an adapter against the Swagger documentation supplied with that access. The [standard ICSD license](https://icsd.products.fiz-karlsruhe.de/sites/default/files/ICSD/documents/terms/ICSD_AGB_E_2021.pdf) restricts automated downloading, text mining, and indexing unless otherwise stipulated.

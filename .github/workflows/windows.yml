@@ -1,0 +1,40 @@
+name: Windows smoke test
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  plot-and-parse:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: skill checkout
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install into a Windows virtual environment
+        working-directory: skill checkout
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          & .\.venv\Scripts\python.exe -m pip install matplotlib pymatgen mp-api
+      - name: Render the example and parse an ICSD-style export
+        working-directory: skill checkout
+        shell: pwsh
+        run: |
+          $skillPython = Join-Path $PWD '.venv\Scripts\python.exe'
+          & $skillPython -c "from mp_api.client import MPRester; from pathlib import Path; Path('example-bom.json').write_text(Path('example.json').read_text(encoding='utf-8'), encoding='utf-8-sig')"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $skillPython .\scripts\ternary.py plot 'example-bom.json' 'test output\mg-al-o.png'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          @(
+            "CollectionCode`tStructuredFormula",
+            "1`tMg Al2 O4",
+            "2`tAl2 Mg O4"
+          ) | Set-Content -Encoding utf8BOM 'icsd sample.txt'
+          & $skillPython .\scripts\icsd_metadata.py Mg Al O 'icsd sample.txt' --output-prefix 'test output\icsd'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $skillPython -c "import csv; from PIL import Image; Image.open('test output/mg-al-o.png').verify(); rows = list(csv.DictReader(open('test output/icsd-compositions.csv', newline='', encoding='utf-8'))); assert len(rows) == 1 and rows[0]['Coll. Codes'] == '1 2'"

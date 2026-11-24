@@ -4,7 +4,9 @@ Plot reported phases and sample compositions for a three-element system. The dis
 
 ## Install in Codex
 
-From a terminal with Git and Python 3.11 or newer, run the following commands.
+Install Git and Python 3.11 or newer. Run the commands for your operating system.
+
+### macOS or Linux
 
 ```sh
 mkdir -p ~/.agents/skills
@@ -12,6 +14,20 @@ git clone https://github.com/Morosan-Lab-Rice/ternary-plotting-skill.git ~/.agen
 python3 -m venv ~/.agents/skills/ternary-plotting-skill/.venv
 ~/.agents/skills/ternary-plotting-skill/.venv/bin/python -m pip install matplotlib pymatgen
 ```
+
+### Windows (PowerShell)
+
+```powershell
+$skillsDir = Join-Path $HOME '.agents\skills'
+$skillDir = Join-Path $skillsDir 'ternary-plotting-skill'
+New-Item -ItemType Directory -Force $skillsDir | Out-Null
+git clone https://github.com/Morosan-Lab-Rice/ternary-plotting-skill.git $skillDir
+py -3 -m venv (Join-Path $skillDir '.venv')
+$skillPython = Join-Path $skillDir '.venv\Scripts\python.exe'
+& $skillPython -m pip install matplotlib pymatgen
+```
+
+If you installed Python without the `py` launcher, use `python -m venv` in its place. Calling the environment’s Python directly works without activating it or changing PowerShell’s execution policy.
 
 For a single project, clone into `.agents/skills/ternary-plotting-skill` from the project root and use that location in the commands below. Start a new Codex chat in your project and invoke `$ternary-plotting-skill`. [Codex skill installation paths](https://developers.openai.com/api/reference/cli)
 
@@ -21,11 +37,19 @@ In Codex, ask:
 
 > Use $ternary-plotting-skill to render its bundled Mg–Al–O example. Use the Python environment in the installed skill folder and save the PNG in this project.
 
-Or run the example directly from your project:
+Or run the example directly from your project. On macOS or Linux:
 
 ```sh
 skill_dir="$HOME/.agents/skills/ternary-plotting-skill"
 "$skill_dir/.venv/bin/python" "$skill_dir/scripts/ternary.py" plot "$skill_dir/example.json" mg-al-o.png
+```
+
+On Windows, use PowerShell:
+
+```powershell
+$skillDir = Join-Path $HOME '.agents\skills\ternary-plotting-skill'
+$skillPython = Join-Path $skillDir '.venv\Scripts\python.exe'
+& $skillPython (Join-Path $skillDir 'scripts\ternary.py') plot (Join-Path $skillDir 'example.json') mg-al-o.png
 ```
 
 The bundled example uses an illustrative phase inventory, plus nominal input and measured output points. It runs without ICSD access or an MP API key. To try phase discovery separately, ask Codex for an ambient-pressure Mg–Al–O phase shortlist with cited sources.
@@ -59,5 +83,17 @@ For phase discovery, select **Experim. inorganic structures**. Check shortlisted
    ```sh
    "$skill_dir/.venv/bin/python" "$skill_dir/scripts/ternary.py" discover Mg Al O mg-al-o-mp.json
    ```
+
+On Windows, after setting `$skillDir` and `$skillPython` as above, install the client, enter your key at the hidden prompt, and test discovery:
+
+```powershell
+& $skillPython -m pip install mp-api
+$secret = Read-Host 'Materials Project API key' -AsSecureString
+$env:MP_API_KEY = [pscredential]::new('materials-project', $secret).GetNetworkCredential().Password
+Remove-Variable secret
+& $skillPython (Join-Path $skillDir 'scripts\ternary.py') discover Mg Al O mg-al-o-mp.json
+```
+
+To reuse the key in future Windows sessions, you can opt in to storing it as a user environment variable with `[Environment]::SetEnvironmentVariable('MP_API_KEY', $env:MP_API_KEY, 'User')`. It will be available to new processes after they pick up the updated environment. Anyone with access to your Windows account or its stored settings may be able to read it.
 
 The resulting JSON includes the database version and counts for the three binaries and the ternary. A default plot uses compositions with an experimental structure match. Add `--include-theoretical` to the plot command to show theoretical entries at 20% opacity. [Materials Project API setup](https://docs.materialsproject.org/downloading-data/using-the-api/getting-started)
