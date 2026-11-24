@@ -22,3 +22,5 @@ If Materials Project discovery is unavailable, provide the [API setup steps](ref
 - Label 10 through 90 in 10-point increments on each side. The pure-element vertices mark the endpoints. Use distinct markers for phases and sample points. A phase marker represents a composition. Plot homogeneity ranges, tie lines, or phase boundaries only with supporting data. Keep distinct polymorph IDs even when they share coordinates. The plotter tries `label_offset` first, then looks for a clear position. Use shorter labels or a numbered key if the plot is too dense.
 
 - Nominal input and measured output use the same circle and color by default. Input is hollow and output is filled. For any phase or point, set `marker`, `color`, `filled`, or `marker_size` (points squared) to override its style. Use a fillable Matplotlib marker for hollow symbols. Lines and arrows accept `color`, `linestyle`, and `linewidth` (points). Arrows also accept `arrowstyle` and `mutation_scale` (arrowhead scale).
+
+- Explain every annotation symbol or footnote on the figure itself. Use `footnotes` in the plot JSON to add short lines beneath the triangle.

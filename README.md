@@ -4,7 +4,7 @@ Plot reported phases and sample compositions for a three-element system. The dis
 
 ![Bundled Mg–Al–O ternary plot showing phase markers, nominal input, and measured output](assets/mg-al-o-example.png)
 
-*Asterisks mark condition-specific reports. MgO₂ was reported at high oxygen fugacity and MgAl₂ after rapid quenching. The hollow circle marks nominal input and the filled circle marks measured output.*
+*The hollow circle marks nominal input and the filled circle marks measured output.*
 
 ## Install in Codex
 
@@ -56,7 +56,7 @@ $skillPython = Join-Path $skillDir '.venv\Scripts\python.exe'
 & $skillPython (Join-Path $skillDir 'scripts\ternary.py') plot (Join-Path $skillDir 'example.json') mg-al-o.png
 ```
 
-The bundled example shows eight reported Mg–Al–O compositions from the literature, including the β and β′ Samson phases at a shared representative composition. Asterisks mark phases reported under specific preparation or chemical conditions. The nominal input and measured output are illustrative. It runs without ICSD access or an MP API key. To try phase discovery separately, ask Codex for an ambient-pressure Mg–Al–O phase shortlist with cited sources.
+The bundled example shows eight reported Mg–Al–O compositions from the literature, including the β and β′ Samson phases at a shared representative composition. The nominal input and measured output are illustrative. It runs without ICSD access or an MP API key. To try phase discovery separately, ask Codex for an ambient-pressure Mg–Al–O phase shortlist with cited sources.
 
 ## Access ICSD through Rice
 

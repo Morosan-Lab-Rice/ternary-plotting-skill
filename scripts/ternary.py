@@ -168,6 +168,16 @@ def plot(data, output, *, include_theoretical=False):
                              "mathtext.rm": "Arial", "mathtext.it": "Arial:italic",
                              "mathtext.bf": "Arial:bold"})
     fig, ax = plt.subplots(figsize=(8, 8))
+    footnotes = data.get("footnotes", [])
+    footnote_text = None
+    if footnotes:
+        footnote_text = fig.text(fig.subplotpars.left, .025, "\n".join(footnotes),
+                                 ha="left", va="bottom", fontsize=8)
+        fig.canvas.draw()
+        bounds = footnote_text.get_window_extent(fig.canvas.get_renderer())
+        if bounds.x1 > fig.bbox.width * fig.subplotpars.right:
+            raise ValueError("Figure footnotes are too wide. Split long notes into shorter lines.")
+        fig.subplots_adjust(bottom=max(fig.subplotpars.bottom, bounds.y1 / fig.bbox.height + .04))
     draw_grid(ax, elements, axis_basis)
     for line in data.get("lines", []):
         kind = line.get("kind", "guide")
@@ -248,6 +258,8 @@ def plot(data, output, *, include_theoretical=False):
     handles, names = ax.get_legend_handles_labels()
     unique = dict(zip(names, handles))
     obstacles = [ax.title]
+    if footnote_text is not None:
+        obstacles.append(footnote_text)
     if unique:
         obstacles.append(ax.legend(unique.values(), unique.keys(), loc="upper left",
                                    framealpha=1, facecolor="white", edgecolor="black",
